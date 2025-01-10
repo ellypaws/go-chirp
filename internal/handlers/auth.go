@@ -56,7 +56,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func generateJWT(user models.User) (string, error) {
+func generateJWT(user *models.User) (string, error) {
 	claims := models.Claims{
 		UserID:   user.ID,
 		Username: user.Username,

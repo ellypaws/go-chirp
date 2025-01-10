@@ -15,6 +15,12 @@ func GetUserByUsername(username string) (models.User, error) {
 	return user, err
 }
 
+func GetUserByEmail(email string) (models.User, error) {
+	var user models.User
+	err := db.QueryRow("SELECT id, username, email, password FROM users WHERE email = $1", email).Scan(&user.ID, &user.Username, &user.Email, &user.Password)
+	return user, err
+}
+
 func CreateTweet(tweet models.Tweet) error {
 	_, err := db.Exec("INSERT INTO tweets (user_id, content) VALUES ($1, $2)", tweet.UserID, tweet.Content)
 	return err
