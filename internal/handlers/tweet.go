@@ -7,9 +7,7 @@ import (
 	"net/http"
 )
 
-type CreateTweetHandler struct{}
-
-func (s CreateTweetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func CreateTweetHandler(w http.ResponseWriter, r *http.Request) {
 	var tweet models.Tweet
 	json.NewDecoder(r.Body).Decode(&tweet)
 	err := services.CreateTweet(tweet)

@@ -17,8 +17,8 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/signup", handlers.SignupHandler).Methods("POST")
 	router.HandleFunc("/login", handlers.LoginHandler).Methods("POST")
-	router.HandleFunc("/tweet", middleware.JWTMiddleware(handlers.CreateTweetHandler{}).ServeHTTP).Methods("POST")
-	router.HandleFunc("/follow", middleware.JWTMiddleware(handlers.FollowHandler{}).ServeHTTP).Methods("POST")
+	router.HandleFunc("/tweet", middleware.JWTMiddleware(http.HandlerFunc(handlers.CreateTweetHandler)).ServeHTTP).Methods("POST")
+	router.HandleFunc("/follow", middleware.JWTMiddleware(http.HandlerFunc(handlers.FollowHandler)).ServeHTTP).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
