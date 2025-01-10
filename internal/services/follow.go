@@ -1,23 +1,22 @@
 package services
 
 import (
-    "errors"
-    "twitter-backend/internal/models"
-    "twitter-backend/pkg/db"
+	"github.com/ellypaws/go-chirp/internal/models"
+	"github.com/ellypaws/go-chirp/pkg/db"
 )
 
 func FollowUser(follow models.Follow) error {
-    return db.CreateFollow(follow)
+	return db.CreateFollow(follow)
 }
 
 func UnfollowUser(follow models.Follow) error {
-    return db.DeleteFollow(follow)
+	return db.DeleteFollow(follow)
 }
 
 func GetFollowers(userID string) ([]models.User, error) {
-    return db.GetFollowers(userID)
+	return db.GetFollowers(userID)
 }
 
 func GetFollowing(userID string) ([]models.User, error) {
-    return db.GetFollowing(userID)
+	return db.GetFollowing(userID)
 }

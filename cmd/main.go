@@ -1,22 +1,23 @@
 package main
 
 import (
-    "log"
-    "net/http"
-    "twitter-backend/internal/handlers"
-    "twitter-backend/pkg/db"
+	"log"
+	"net/http"
 
-    "github.com/gorilla/mux"
+	"github.com/ellypaws/go-chirp/internal/handlers"
+	"github.com/ellypaws/go-chirp/pkg/db"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
-    db.InitDB()
+	db.InitDB()
 
-    router := mux.NewRouter()
-    router.HandleFunc("/signup", handlers.SignupHandler).Methods("POST")
-    router.HandleFunc("/login", handlers.LoginHandler).Methods("POST")
-    router.HandleFunc("/tweet", handlers.CreateTweetHandler).Methods("POST")
-    router.HandleFunc("/follow", handlers.FollowHandler).Methods("POST")
+	router := mux.NewRouter()
+	router.HandleFunc("/signup", handlers.SignupHandler).Methods("POST")
+	router.HandleFunc("/login", handlers.LoginHandler).Methods("POST")
+	router.HandleFunc("/tweet", handlers.CreateTweetHandler).Methods("POST")
+	router.HandleFunc("/follow", handlers.FollowHandler).Methods("POST")
 
-    log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
