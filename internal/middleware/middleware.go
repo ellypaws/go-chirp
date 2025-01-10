@@ -34,7 +34,16 @@ func JWTMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
+		if jwtExpired(claims) {
+			http.Error(w, "Token expired", http.StatusUnauthorized)
+			return
+		}
+
 		ctx := context.WithValue(r.Context(), "jwt", claims)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
+}
+
+func jwtExpired(claims *models.Claims) bool {
+	return claims.ExpiresAt < jwt.TimeFunc().Unix()
 }
