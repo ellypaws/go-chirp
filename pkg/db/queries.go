@@ -50,6 +50,48 @@ func FetchTweet(tweetID int) (models.Tweet, error) {
 	return tweet, err
 }
 
+func FetchUserTweets(userID string) ([]models.Tweet, error) {
+	rows, err := db.Query("SELECT id, user_id, content, created_at FROM tweets WHERE user_id = $1", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tweets []models.Tweet
+	for rows.Next() {
+		var tweet models.Tweet
+		err := rows.Scan(&tweet.ID, &tweet.UserID, &tweet.Content, &tweet.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		tweets = append(tweets, tweet)
+	}
+	return tweets, nil
+}
+
+func FetchUserTweetsByUsername(username string) ([]models.Tweet, error) {
+	rows, err := db.Query(`SELECT tweets.id, tweets.user_id, tweets.content, tweets.created_at
+								 FROM tweets
+								 JOIN users
+								 ON tweets.user_id = users.id
+								 WHERE users.username = $1`, username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tweets []models.Tweet
+	for rows.Next() {
+		var tweet models.Tweet
+		err := rows.Scan(&tweet.ID, &tweet.UserID, &tweet.Content, &tweet.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		tweets = append(tweets, tweet)
+	}
+	return tweets, nil
+}
+
 func FetchTweets() ([]models.Tweet, error) {
 	rows, err := db.Query("SELECT id, user_id, content, created_at FROM tweets")
 	if err != nil {

@@ -25,3 +25,11 @@ func DeleteTweet(tweetID, userID int) error {
 func FetchTweets() ([]models.Tweet, error) {
 	return db.FetchTweets()
 }
+
+func FetchUserTweets(userID string) ([]models.Tweet, error) {
+	return db.FetchUserTweets(userID)
+}
+
+func FetchUserTweetsByUsername(username string) ([]models.Tweet, error) {
+	return db.FetchUserTweetsByUsername(username)
+}

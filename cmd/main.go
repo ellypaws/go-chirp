@@ -24,6 +24,8 @@ func main() {
 	router.HandleFunc("/login", handlers.LoginHandler).Methods("POST")
 	router.HandleFunc("/tweet", middleware.JWTMiddleware(http.HandlerFunc(handlers.CreateTweetHandler)).ServeHTTP).Methods("POST")
 	router.HandleFunc("/follow", middleware.JWTMiddleware(http.HandlerFunc(handlers.FollowHandler)).ServeHTTP).Methods("POST")
+	router.HandleFunc("/user/{userID}/tweets", middleware.JWTMiddleware(http.HandlerFunc(handlers.FetchUserTweetsHandler)).ServeHTTP).Methods("GET")
+	router.HandleFunc("/username/{username}/tweets", handlers.FetchUserTweetsHandler).Methods("GET")
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
