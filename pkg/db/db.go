@@ -4,10 +4,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/ellypaws/go-chirp/internal/models"
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
+	"log"
 	"os"
+	"regexp"
 	"strings"
 )
 
@@ -22,7 +23,10 @@ func InitDB() {
 	if err != nil {
 		panic(err)
 	}
-
+	err = migrations(db)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func loadDataSource() (string, error) {
@@ -34,8 +38,10 @@ func loadDataSource() (string, error) {
 	envVars := map[string]bool{
 		"host":     true,
 		"port":     true,
+		"dbname":   false,
 		"user":     true,
 		"password": true,
+		"sslmode":  false,
 	}
 
 	for key, required := range envVars {
@@ -64,14 +70,12 @@ func getEnv(key string, required ...bool) (string, error) {
 	return fmt.Sprintf("%s=%s", strings.ToLower(key), value), nil
 }
 
-// TODO: refactor this to set pragma version
 func migrations(database *sql.DB) error {
-	err := assertDatabase(database)
+	err := assertDatabase()
 	if err != nil {
 		return err
 	}
 	_, err = database.Exec(`
-		\c chirp;
 		CREATE TABLE IF NOT EXISTS users (
 			id SERIAL PRIMARY KEY,
 			username TEXT UNIQUE NOT NULL,
@@ -80,39 +84,47 @@ func migrations(database *sql.DB) error {
 		);
 		CREATE TABLE IF NOT EXISTS tweets (
 			id SERIAL PRIMARY KEY,
-			user_id INTEGER NOT NULL,
-			body TEXT NOT NULL,
+			user_id INTEGER NOT NULL REFERENCES users(id),
+			content TEXT NOT NULL,
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		);
 		CREATE TABLE IF NOT EXISTS follows (
 			id SERIAL PRIMARY KEY,
-			follower_id INTEGER NOT NULL,
-			following_id INTEGER NOT NULL
+			follower_id INTEGER NOT NULL REFERENCES users(id),
+			following_id INTEGER NOT NULL REFERENCES users(id)
 		);
 	`)
 	return err
 }
 
-func assertDatabase(database *sql.DB) error {
-	_, err := database.Exec("SELECT 1 FROM pg_database WHERE datname='chirp'")
+func assertDatabase() error {
+	dataSource, err := loadDataSource()
 	if err != nil {
-		_, err = db.Exec("CREATE DATABASE chirp")
+		return fmt.Errorf("failed to load data source: %w", err)
 	}
-	return err
-}
 
-func CreateUser(user models.User) error {
-	_, err := db.Exec("INSERT INTO users (username, email, password) VALUES ($1, $2, $3)", user.Username, user.Email, user.Password)
-	return err
-}
+	dataSource = regexp.MustCompile(`dbname=\w+ ?`).ReplaceAllString(dataSource, "")
+	adminDB, err := sql.Open("postgres", dataSource)
+	if err != nil {
+		return fmt.Errorf("failed to connect to admin database: %w", err)
+	}
+	defer adminDB.Close()
 
-func GetUserByUsername(username string) (models.User, error) {
-	var user models.User
-	err := db.QueryRow("SELECT id, username, email, password FROM users WHERE username = $1", username).Scan(
-		&user.ID,
-		&user.Username,
-		&user.Email,
-		&user.Password,
-	)
-	return user, err
+	var exists bool
+	err = adminDB.QueryRow("SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname='chirp')").Scan(&exists)
+	if err != nil {
+		return fmt.Errorf("failed to check if database exists: %w", err)
+	}
+
+	if !exists {
+		_, err = adminDB.Exec("CREATE DATABASE chirp")
+		if err != nil {
+			return fmt.Errorf("failed to create database: %w", err)
+		}
+		log.Printf("Database 'chirp' created")
+	} else {
+		log.Printf("Database 'chirp' already exists")
+	}
+
+	return nil
 }
