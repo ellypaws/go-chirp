@@ -12,6 +12,14 @@ func CreateUser(user models.User) error {
 	return err
 }
 
+func GetUserByID(userID string) (models.User, error) {
+	var user models.User
+	err := db.QueryRow(
+		"SELECT id, username, email, password FROM users WHERE id = $1", userID,
+	).Scan(&user.ID, &user.Username, &user.Email, &user.Password)
+	return user, err
+}
+
 func GetUserByUsername(username string) (models.User, error) {
 	var user models.User
 	err := db.QueryRow(

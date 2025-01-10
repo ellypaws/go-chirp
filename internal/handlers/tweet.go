@@ -2,10 +2,14 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
+	"net/http"
+
 	"github.com/ellypaws/go-chirp/internal/models"
 	"github.com/ellypaws/go-chirp/internal/services"
+	"github.com/ellypaws/go-chirp/pkg/db"
+
 	"github.com/gorilla/mux"
-	"net/http"
 )
 
 func CreateTweetHandler(w http.ResponseWriter, r *http.Request) {
@@ -67,8 +71,18 @@ func FetchUserTweetsHandler(w http.ResponseWriter, r *http.Request) {
 	var err error
 	vars := mux.Vars(r)
 	if username := vars["username"]; username != "" {
+		_, err = db.GetUserByUsername(username)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("error fetching user by username: %v", err), http.StatusBadRequest)
+			return
+		}
 		tweets, err = services.FetchUserTweetsByUsername(username)
 	} else if userID := vars["userID"]; userID != "" {
+		_, err = db.GetUserByID(userID)
+		if err != nil {
+			http.Error(w, fmt.Sprintf("error fetching user by userID: %v", err), http.StatusBadRequest)
+			return
+		}
 		tweets, err = services.FetchUserTweets(userID)
 	} else {
 		http.Error(w, "missing username or userID query parameter", http.StatusBadRequest)
