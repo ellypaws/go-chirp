@@ -8,7 +8,9 @@ import (
 	"github.com/ellypaws/go-chirp/internal/services"
 )
 
-func FollowHandler(w http.ResponseWriter, r *http.Request) {
+type FollowHandler struct{}
+
+func (s FollowHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var follow models.Follow
 	json.NewDecoder(r.Body).Decode(&follow)
 	err := services.FollowUser(follow)
