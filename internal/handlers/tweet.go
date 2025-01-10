@@ -9,7 +9,10 @@ import (
 
 func CreateTweetHandler(w http.ResponseWriter, r *http.Request) {
 	var tweet models.Tweet
-	json.NewDecoder(r.Body).Decode(&tweet)
+	err := json.NewDecoder(r.Body).Decode(&tweet)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
 
 	claims, ok := r.Context().Value("jwt").(*models.Claims)
 	if !ok {
@@ -19,7 +22,7 @@ func CreateTweetHandler(w http.ResponseWriter, r *http.Request) {
 
 	tweet.UserID = claims.UserID
 
-	err := services.CreateTweet(tweet)
+	err = services.CreateTweet(tweet)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -29,7 +32,10 @@ func CreateTweetHandler(w http.ResponseWriter, r *http.Request) {
 
 func DeleteTweetHandler(w http.ResponseWriter, r *http.Request) {
 	var tweet models.Tweet
-	json.NewDecoder(r.Body).Decode(&tweet)
+	err := json.NewDecoder(r.Body).Decode(&tweet)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+	}
 
 	claims, ok := r.Context().Value("jwt").(*models.Claims)
 	if !ok {
@@ -37,7 +43,7 @@ func DeleteTweetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err := services.DeleteTweet(tweet.ID, claims.UserID)
+	err = services.DeleteTweet(tweet.ID, claims.UserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
