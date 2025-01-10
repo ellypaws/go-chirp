@@ -35,6 +35,10 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("error decoding request body: %v", err), http.StatusBadRequest)
 		return
 	}
+	if login.Username == "" || login.Password == "" {
+		http.Error(w, "username and password are required", http.StatusBadRequest)
+		return
+	}
 	user, err := services.Login(login.Username, login.Password)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error logging in: %v", err), http.StatusBadRequest)
