@@ -57,12 +57,16 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func generateJWT(user models.User) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"user_id":  user.ID,
-		"username": user.Username,
-		"email":    user.Email,
-		"exp":      time.Now().Add(time.Hour * 24).Unix(),
-	})
+	claims := models.Claims{
+		UserID:   user.ID,
+		Username: user.Username,
+		Email:    user.Email,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(time.Hour * 24).Unix(),
+		},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
 	tokenString, err := token.SignedString(middleware.JWTKey)
 	if err != nil {

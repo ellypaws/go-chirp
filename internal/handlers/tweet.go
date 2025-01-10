@@ -10,6 +10,15 @@ import (
 func CreateTweetHandler(w http.ResponseWriter, r *http.Request) {
 	var tweet models.Tweet
 	json.NewDecoder(r.Body).Decode(&tweet)
+
+	claims, ok := r.Context().Value("jwt").(*models.Claims)
+	if !ok {
+		http.Error(w, "Failed to get user from token", http.StatusUnauthorized)
+		return
+	}
+
+	tweet.UserID = claims.UserID
+
 	err := services.CreateTweet(tweet)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)

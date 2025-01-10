@@ -1,6 +1,8 @@
 package middleware
 
 import (
+	"context"
+	"github.com/ellypaws/go-chirp/internal/models"
 	"net/http"
 	"strings"
 
@@ -23,7 +25,7 @@ func JWTMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		claims := new(jwt.MapClaims)
+		claims := new(models.Claims)
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (any, error) {
 			return JWTKey, nil
 		})
@@ -32,6 +34,7 @@ func JWTMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		ctx := context.WithValue(r.Context(), "jwt", claims)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

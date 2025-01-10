@@ -11,6 +11,15 @@ import (
 func FollowHandler(w http.ResponseWriter, r *http.Request) {
 	var follow models.Follow
 	json.NewDecoder(r.Body).Decode(&follow)
+
+	claims, ok := r.Context().Value("jwt").(*models.Claims)
+	if !ok {
+		http.Error(w, "Failed to get user from token", http.StatusUnauthorized)
+		return
+	}
+
+	follow.FollowerID = claims.UserID
+
 	err := services.FollowUser(follow)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
