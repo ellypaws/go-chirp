@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"log"
 	"os"
@@ -34,10 +33,6 @@ func InitDB() {
 }
 
 func loadDataSource() (string, error) {
-	if err := godotenv.Load(); err != nil {
-		return "", err
-	}
-
 	var dataSourceArgs []string
 	envVars := map[string]bool{
 		"host":     true,

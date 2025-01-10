@@ -2,14 +2,27 @@ package middleware
 
 import (
 	"context"
+	"crypto/rand"
 	"github.com/ellypaws/go-chirp/internal/models"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/golang-jwt/jwt"
 )
 
-var JWTKey = []byte("my_secret_key")
+var JWTKey = func() []byte {
+	secret := os.Getenv("JWT_SECRET")
+	if secret != "" {
+		return []byte(secret)
+	}
+	randomKey := make([]byte, 32)
+	_, err := rand.Read(randomKey)
+	if err != nil {
+		panic("Failed to generate random key")
+	}
+	return randomKey
+}()
 
 func JWTMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
