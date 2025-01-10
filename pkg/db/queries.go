@@ -31,6 +31,12 @@ func DeleteTweet(tweetID int) error {
 	return err
 }
 
+func FetchTweet(tweetID int) (models.Tweet, error) {
+	var tweet models.Tweet
+	err := db.QueryRow("SELECT id, user_id, content, created_at FROM tweets WHERE id = $1", tweetID).Scan(&tweet.ID, &tweet.UserID, &tweet.Content, &tweet.CreatedAt)
+	return tweet, err
+}
+
 func FetchTweets() ([]models.Tweet, error) {
 	rows, err := db.Query("SELECT id, user_id, content, created_at FROM tweets")
 	if err != nil {

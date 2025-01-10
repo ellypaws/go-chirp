@@ -30,7 +30,14 @@ func CreateTweetHandler(w http.ResponseWriter, r *http.Request) {
 func DeleteTweetHandler(w http.ResponseWriter, r *http.Request) {
 	var tweet models.Tweet
 	json.NewDecoder(r.Body).Decode(&tweet)
-	err := services.DeleteTweet(tweet.ID)
+
+	claims, ok := r.Context().Value("jwt").(*models.Claims)
+	if !ok {
+		http.Error(w, "Failed to get user from token", http.StatusUnauthorized)
+		return
+	}
+
+	err := services.DeleteTweet(tweet.ID, claims.UserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
