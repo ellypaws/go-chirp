@@ -5,24 +5,35 @@ import (
 )
 
 func CreateUser(user models.User) error {
-	_, err := db.Exec("INSERT INTO users (username, email, password) VALUES ($1, $2, $3)", user.Username, user.Email, user.Password)
+	_, err := db.Exec(
+		"INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
+		user.Username, user.Email, user.Password,
+	)
 	return err
 }
 
 func GetUserByUsername(username string) (models.User, error) {
 	var user models.User
-	err := db.QueryRow("SELECT id, username, email, password FROM users WHERE username = $1", username).Scan(&user.ID, &user.Username, &user.Email, &user.Password)
+	err := db.QueryRow(
+		"SELECT id, username, email, password FROM users WHERE username = $1", username,
+	).Scan(&user.ID, &user.Username, &user.Email, &user.Password)
 	return user, err
 }
 
 func GetUserByEmail(email string) (models.User, error) {
 	var user models.User
-	err := db.QueryRow("SELECT id, username, email, password FROM users WHERE email = $1", email).Scan(&user.ID, &user.Username, &user.Email, &user.Password)
+	err := db.QueryRow(
+		"SELECT id, username, email, password FROM users WHERE email = $1", email,
+	).Scan(&user.ID, &user.Username, &user.Email, &user.Password)
 	return user, err
 }
 
 func CreateTweet(tweet models.Tweet) error {
-	_, err := db.Exec("INSERT INTO tweets (user_id, content) VALUES ($1, $2)", tweet.UserID, tweet.Content)
+	_, err := db.Exec(
+		"INSERT INTO tweets (user_id, content) VALUES ($1, $2)",
+		tweet.UserID,
+		tweet.Content,
+	)
 	return err
 }
 
@@ -33,7 +44,9 @@ func DeleteTweet(tweetID int) error {
 
 func FetchTweet(tweetID int) (models.Tweet, error) {
 	var tweet models.Tweet
-	err := db.QueryRow("SELECT id, user_id, content, created_at FROM tweets WHERE id = $1", tweetID).Scan(&tweet.ID, &tweet.UserID, &tweet.Content, &tweet.CreatedAt)
+	err := db.QueryRow(
+		"SELECT id, user_id, content, created_at FROM tweets WHERE id = $1", tweetID,
+	).Scan(&tweet.ID, &tweet.UserID, &tweet.Content, &tweet.CreatedAt)
 	return tweet, err
 }
 
@@ -57,17 +70,25 @@ func FetchTweets() ([]models.Tweet, error) {
 }
 
 func CreateFollow(follow models.Follow) error {
-	_, err := db.Exec("INSERT INTO follows (follower_id, following_id) VALUES ($1, $2)", follow.FollowerID, follow.FollowedID)
+	_, err := db.Exec("INSERT INTO follows (follower_id, following_id) VALUES ($1, $2)",
+		follow.FollowerID, follow.FollowedID,
+	)
 	return err
 }
 
 func DeleteFollow(follow models.Follow) error {
-	_, err := db.Exec("DELETE FROM follows WHERE follower_id = $1 AND following_id = $2", follow.FollowerID, follow.FollowedID)
+	_, err := db.Exec("DELETE FROM follows WHERE follower_id = $1 AND following_id = $2",
+		follow.FollowerID, follow.FollowedID,
+	)
 	return err
 }
 
 func GetFollowers(userID string) ([]models.User, error) {
-	rows, err := db.Query("SELECT users.id, users.username, users.email FROM users JOIN follows ON users.id = follows.follower_id WHERE follows.following_id = $1", userID)
+	rows, err := db.Query(`SELECT users.id, users.username, users.email
+                                 FROM users
+                                 JOIN follows
+                                 ON users.id = follows.follower_id
+                                 WHERE follows.following_id = $1`, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +107,11 @@ func GetFollowers(userID string) ([]models.User, error) {
 }
 
 func GetFollowing(userID string) ([]models.User, error) {
-	rows, err := db.Query("SELECT users.id, users.username, users.email FROM users JOIN follows ON users.id = follows.following_id WHERE follows.follower_id = $1", userID)
+	rows, err := db.Query(`SELECT users.id, users.username, users.email
+                                 FROM users
+                                 JOIN follows 
+                                 ON users.id = follows.following_id
+                                 WHERE follows.follower_id = $1`, userID)
 	if err != nil {
 		return nil, err
 	}
