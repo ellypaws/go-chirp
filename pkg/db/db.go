@@ -15,6 +15,10 @@ import (
 var db *sql.DB
 
 func InitDB() {
+	err := assertDatabase()
+	if err != nil {
+		panic(err)
+	}
 	dataSource, err := loadDataSource()
 	if err != nil {
 		panic(err)
@@ -71,11 +75,7 @@ func getEnv(key string, required ...bool) (string, error) {
 }
 
 func migrations(database *sql.DB) error {
-	err := assertDatabase()
-	if err != nil {
-		return err
-	}
-	_, err = database.Exec(`
+	_, err := database.Exec(`
 		CREATE TABLE IF NOT EXISTS users (
 			id SERIAL PRIMARY KEY,
 			username TEXT UNIQUE NOT NULL,
@@ -123,7 +123,7 @@ func assertDatabase() error {
 		}
 		log.Printf("Database 'chirp' created")
 	} else {
-		log.Printf("Database 'chirp' already exists")
+		log.Printf("Loading existing database 'chirp'")
 	}
 
 	return nil

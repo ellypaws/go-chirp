@@ -1,7 +1,6 @@
 package db
 
 import (
-	"database/sql"
 	"github.com/ellypaws/go-chirp/internal/models"
 )
 
