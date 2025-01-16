@@ -21,10 +21,10 @@ func main() {
 	router.HandleFunc("POST /signup", handlers.SignupHandler)
 	router.HandleFunc("POST /login", handlers.LoginHandler)
 	router.HandleFunc("GET /tweets", handlers.FetchTweetsHandler)
-	router.HandleFunc("POST /tweet", middleware.JWTMiddleware(http.HandlerFunc(handlers.CreateTweetHandler)).ServeHTTP)
-	router.HandleFunc("POST /follow", middleware.JWTMiddleware(http.HandlerFunc(handlers.FollowHandler)).ServeHTTP)
 	router.HandleFunc("GET /user/{userID}/tweets", handlers.FetchUserTweetsHandler)
 	router.HandleFunc("GET /username/{username}/tweets", handlers.FetchUserTweetsHandler)
+	router.Handle("POST /tweet", middleware.JWTMiddleware(http.HandlerFunc(handlers.CreateTweetHandler)))
+	router.Handle("POST /follow", middleware.JWTMiddleware(http.HandlerFunc(handlers.FollowHandler)))
 
 	v1 := http.NewServeMux()
 	v1.Handle("/v1/", http.StripPrefix("/v1", router))
