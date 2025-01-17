@@ -1,43 +1,43 @@
-package db
+package database
 
 import (
 	"github.com/ellypaws/go-chirp/internal/models"
 )
 
-func CreateUser(user models.User) error {
-	_, err := DB.Exec(
+func (s *Service) CreateUser(user models.User) error {
+	_, err := s.db.Exec(
 		"INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
 		user.Username, user.Email, user.Password,
 	)
 	return err
 }
 
-func GetUserByID(userID string) (models.User, error) {
+func (s *Service) GetUserByID(userID string) (models.User, error) {
 	var user models.User
-	err := DB.QueryRow(
+	err := s.db.QueryRow(
 		"SELECT id, username, email, password FROM users WHERE id = $1", userID,
 	).Scan(&user.ID, &user.Username, &user.Email, &user.Password)
 	return user, err
 }
 
-func GetUserByUsername(username string) (models.User, error) {
+func (s *Service) GetUserByUsername(username string) (models.User, error) {
 	var user models.User
-	err := DB.QueryRow(
+	err := s.db.QueryRow(
 		"SELECT id, username, email, password FROM users WHERE username = $1", username,
 	).Scan(&user.ID, &user.Username, &user.Email, &user.Password)
 	return user, err
 }
 
-func GetUserByEmail(email string) (models.User, error) {
+func (s *Service) GetUserByEmail(email string) (models.User, error) {
 	var user models.User
-	err := DB.QueryRow(
+	err := s.db.QueryRow(
 		"SELECT id, username, email, password FROM users WHERE email = $1", email,
 	).Scan(&user.ID, &user.Username, &user.Email, &user.Password)
 	return user, err
 }
 
-func CreateTweet(tweet models.Tweet) error {
-	_, err := DB.Exec(
+func (s *Service) CreateTweet(tweet models.Tweet) error {
+	_, err := s.db.Exec(
 		"INSERT INTO tweets (user_id, content) VALUES ($1, $2)",
 		tweet.UserID,
 		tweet.Content,
@@ -45,21 +45,21 @@ func CreateTweet(tweet models.Tweet) error {
 	return err
 }
 
-func DeleteTweet(tweetID int) error {
-	_, err := DB.Exec("DELETE FROM tweets WHERE id = $1", tweetID)
+func (s *Service) DeleteTweet(tweetID int) error {
+	_, err := s.db.Exec("DELETE FROM tweets WHERE id = $1", tweetID)
 	return err
 }
 
-func FetchTweet(tweetID int) (models.Tweet, error) {
+func (s *Service) FetchTweet(tweetID int) (models.Tweet, error) {
 	var tweet models.Tweet
-	err := DB.QueryRow(
+	err := s.db.QueryRow(
 		"SELECT id, user_id, content, created_at FROM tweets WHERE id = $1", tweetID,
 	).Scan(&tweet.ID, &tweet.UserID, &tweet.Content, &tweet.CreatedAt)
 	return tweet, err
 }
 
-func FetchUserTweets(userID string) ([]models.Tweet, error) {
-	rows, err := DB.Query("SELECT id, user_id, content, created_at FROM tweets WHERE user_id = $1", userID)
+func (s *Service) FetchUserTweets(userID string) ([]models.Tweet, error) {
+	rows, err := s.db.Query("SELECT id, user_id, content, created_at FROM tweets WHERE user_id = $1", userID)
 	if err != nil {
 		return nil, err
 	}
@@ -77,8 +77,8 @@ func FetchUserTweets(userID string) ([]models.Tweet, error) {
 	return tweets, nil
 }
 
-func FetchUserTweetsByUsername(username string) ([]models.Tweet, error) {
-	rows, err := DB.Query(`SELECT tweets.id, tweets.user_id, tweets.content, tweets.created_at
+func (s *Service) FetchUserTweetsByUsername(username string) ([]models.Tweet, error) {
+	rows, err := s.db.Query(`SELECT tweets.id, tweets.user_id, tweets.content, tweets.created_at
 								 FROM tweets
 								 JOIN users
 								 ON tweets.user_id = users.id
@@ -100,8 +100,8 @@ func FetchUserTweetsByUsername(username string) ([]models.Tweet, error) {
 	return tweets, nil
 }
 
-func FetchTweets() ([]models.Tweet, error) {
-	rows, err := DB.Query("SELECT id, user_id, content, created_at FROM tweets")
+func (s *Service) FetchTweets() ([]models.Tweet, error) {
+	rows, err := s.db.Query("SELECT id, user_id, content, created_at FROM tweets")
 	if err != nil {
 		return nil, err
 	}
@@ -119,22 +119,22 @@ func FetchTweets() ([]models.Tweet, error) {
 	return tweets, nil
 }
 
-func CreateFollow(follow models.Follow) error {
-	_, err := DB.Exec("INSERT INTO follows (follower_id, following_id) VALUES ($1, $2)",
+func (s *Service) CreateFollow(follow models.Follow) error {
+	_, err := s.db.Exec("INSERT INTO follows (follower_id, following_id) VALUES ($1, $2)",
 		follow.FollowerID, follow.FollowedID,
 	)
 	return err
 }
 
-func DeleteFollow(follow models.Follow) error {
-	_, err := DB.Exec("DELETE FROM follows WHERE follower_id = $1 AND following_id = $2",
+func (s *Service) DeleteFollow(follow models.Follow) error {
+	_, err := s.db.Exec("DELETE FROM follows WHERE follower_id = $1 AND following_id = $2",
 		follow.FollowerID, follow.FollowedID,
 	)
 	return err
 }
 
-func GetFollowers(userID string) ([]models.User, error) {
-	rows, err := DB.Query(`SELECT users.id, users.username, users.email
+func (s *Service) GetFollowers(userID string) ([]models.User, error) {
+	rows, err := s.db.Query(`SELECT users.id, users.username, users.email
                                  FROM users
                                  JOIN follows
                                  ON users.id = follows.follower_id
@@ -156,8 +156,8 @@ func GetFollowers(userID string) ([]models.User, error) {
 	return followers, nil
 }
 
-func GetFollowing(userID string) ([]models.User, error) {
-	rows, err := DB.Query(`SELECT users.id, users.username, users.email
+func (s *Service) GetFollowing(userID string) ([]models.User, error) {
+	rows, err := s.db.Query(`SELECT users.id, users.username, users.email
                                  FROM users
                                  JOIN follows 
                                  ON users.id = follows.following_id

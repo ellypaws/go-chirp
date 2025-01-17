@@ -6,11 +6,11 @@ import (
 	"github.com/ellypaws/go-chirp/pkg/db"
 )
 
-func CreateTweet(tweet models.Tweet) error {
+func CreateTweet(db *database.Service, tweet models.Tweet) error {
 	return db.CreateTweet(tweet)
 }
 
-func DeleteTweet(tweetID, userID int) error {
+func DeleteTweet(db *database.Service, tweetID, userID int) error {
 	tweet, err := db.FetchTweet(tweetID)
 	if err != nil {
 		return err
@@ -22,14 +22,14 @@ func DeleteTweet(tweetID, userID int) error {
 	return db.DeleteTweet(tweetID)
 }
 
-func FetchTweets() ([]models.Tweet, error) {
+func FetchTweets(db *database.Service) ([]models.Tweet, error) {
 	return db.FetchTweets()
 }
 
-func FetchUserTweets(userID string) ([]models.Tweet, error) {
+func FetchUserTweets(db *database.Service, userID string) ([]models.Tweet, error) {
 	return db.FetchUserTweets(userID)
 }
 
-func FetchUserTweetsByUsername(username string) ([]models.Tweet, error) {
+func FetchUserTweetsByUsername(db *database.Service, username string) ([]models.Tweet, error) {
 	return db.FetchUserTweetsByUsername(username)
 }

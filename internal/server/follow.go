@@ -1,4 +1,4 @@
-package handlers
+package server
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/ellypaws/go-chirp/internal/utils"
 )
 
-func FollowHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) FollowHandler(w http.ResponseWriter, r *http.Request) {
 	follow, err := utils.Decode[models.Follow](r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -23,7 +23,7 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 
 	follow.FollowerID = claims.UserID
 
-	err = services.FollowUser(follow)
+	err = services.FollowUser(s.db, follow)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -31,13 +31,13 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func UnfollowHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) UnfollowHandler(w http.ResponseWriter, r *http.Request) {
 	follow, err := utils.Decode[models.Follow](r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = services.UnfollowUser(follow)
+	err = services.UnfollowUser(s.db, follow)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -45,9 +45,9 @@ func UnfollowHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func GetFollowersHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetFollowersHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.URL.Query().Get("user_id")
-	followers, err := services.GetFollowers(userID)
+	followers, err := services.GetFollowers(s.db, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -55,9 +55,9 @@ func GetFollowersHandler(w http.ResponseWriter, r *http.Request) {
 	_ = utils.Encode(w, followers)
 }
 
-func GetFollowingHandler(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetFollowingHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.URL.Query().Get("user_id")
-	following, err := services.GetFollowing(userID)
+	following, err := services.GetFollowing(s.db, userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
