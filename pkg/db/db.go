@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-var db *sql.DB
+var DB *sql.DB
 
 func InitDB() {
 	err := assertDatabase()
@@ -22,11 +22,11 @@ func InitDB() {
 	if err != nil {
 		panic(err)
 	}
-	db, err = sql.Open("postgres", dataSource)
+	DB, err = sql.Open("postgres", dataSource)
 	if err != nil {
 		panic(err)
 	}
-	err = migrations(db)
+	err = migrations(DB)
 	if err != nil {
 		panic(err)
 	}

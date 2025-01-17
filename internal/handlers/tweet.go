@@ -1,20 +1,20 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/ellypaws/go-chirp/internal/models"
 	"github.com/ellypaws/go-chirp/internal/services"
+	"github.com/ellypaws/go-chirp/internal/utils"
 	"github.com/ellypaws/go-chirp/pkg/db"
 )
 
 func CreateTweetHandler(w http.ResponseWriter, r *http.Request) {
-	var tweet models.Tweet
-	err := json.NewDecoder(r.Body).Decode(&tweet)
+	tweet, err := utils.Decode[models.Tweet](r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	claims, ok := r.Context().Value("jwt").(*models.Claims)
@@ -34,10 +34,10 @@ func CreateTweetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeleteTweetHandler(w http.ResponseWriter, r *http.Request) {
-	var tweet models.Tweet
-	err := json.NewDecoder(r.Body).Decode(&tweet)
+	tweet, err := utils.Decode[models.Tweet](r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	claims, ok := r.Context().Value("jwt").(*models.Claims)
@@ -61,7 +61,7 @@ func FetchTweetsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tweets)
+	_ = utils.Encode(w, tweets)
 }
 
 func FetchUserTweetsHandler(w http.ResponseWriter, r *http.Request) {
@@ -90,5 +90,5 @@ func FetchUserTweetsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(tweets)
+	_ = utils.Encode(w, tweets)
 }

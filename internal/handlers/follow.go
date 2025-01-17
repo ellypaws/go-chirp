@@ -1,16 +1,19 @@
 package handlers
 
 import (
-	"encoding/json"
 	"net/http"
 
 	"github.com/ellypaws/go-chirp/internal/models"
 	"github.com/ellypaws/go-chirp/internal/services"
+	"github.com/ellypaws/go-chirp/internal/utils"
 )
 
 func FollowHandler(w http.ResponseWriter, r *http.Request) {
-	var follow models.Follow
-	json.NewDecoder(r.Body).Decode(&follow)
+	follow, err := utils.Decode[models.Follow](r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	claims, ok := r.Context().Value("jwt").(*models.Claims)
 	if !ok {
@@ -20,7 +23,7 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 
 	follow.FollowerID = claims.UserID
 
-	err := services.FollowUser(follow)
+	err = services.FollowUser(follow)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -29,9 +32,12 @@ func FollowHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UnfollowHandler(w http.ResponseWriter, r *http.Request) {
-	var follow models.Follow
-	json.NewDecoder(r.Body).Decode(&follow)
-	err := services.UnfollowUser(follow)
+	follow, err := utils.Decode[models.Follow](r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	err = services.UnfollowUser(follow)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -46,7 +52,7 @@ func GetFollowersHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	json.NewEncoder(w).Encode(followers)
+	_ = utils.Encode(w, followers)
 }
 
 func GetFollowingHandler(w http.ResponseWriter, r *http.Request) {
@@ -56,5 +62,5 @@ func GetFollowingHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	json.NewEncoder(w).Encode(following)
+	_ = utils.Encode(w, following)
 }

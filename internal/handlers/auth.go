@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -9,13 +8,13 @@ import (
 	"github.com/ellypaws/go-chirp/internal/middleware"
 	"github.com/ellypaws/go-chirp/internal/models"
 	"github.com/ellypaws/go-chirp/internal/services"
+	"github.com/ellypaws/go-chirp/internal/utils"
 
 	"github.com/golang-jwt/jwt"
 )
 
 func SignupHandler(w http.ResponseWriter, r *http.Request) {
-	var user models.User
-	err := json.NewDecoder(r.Body).Decode(&user)
+	user, err := utils.Decode[models.User](r)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -29,8 +28,7 @@ func SignupHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	var login models.Credentials
-	err := json.NewDecoder(r.Body).Decode(&login)
+	login, err := utils.Decode[models.Credentials](r)
 	if err != nil {
 		http.Error(w, fmt.Sprintf("error decoding request body: %v", err), http.StatusBadRequest)
 		return
@@ -54,7 +52,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	user.Password = ""
-	_ = json.NewEncoder(w).Encode(models.LoginResponse{
+	_ = utils.Encode(w, models.LoginResponse{
 		User:  user,
 		Token: token,
 	})
