@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Go-Chirp</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+<div class="container mx-auto p-4">
+    <h1 class="text-3xl font-bold mb-4">Go-Chirp</h1>
+    <div id="login-form" class="mb-4">
+        <h2 class="text-xl font-semibold mb-2">Login</h2>
+        <form id="login" class="bg-white p-4 rounded shadow-md">
+            <div class="mb-4">
+                <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                <input type="text" id="username" name="username" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <div class="mb-4">
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" id="password" name="password" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md">Login</button>
+        </form>
+    </div>
+    <div id="tweet-form" class="hidden">
+        <h2 class="text-xl font-semibold mb-2">Create Tweet</h2>
+        <form id="tweet" class="bg-white p-4 rounded shadow-md">
+            <div class="mb-4">
+                <label for="content" class="block text-sm font-medium text-gray-700">Content</label>
+                <textarea id="content" name="content" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"></textarea>
+            </div>
+            <button type="submit" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md">Tweet</button>
+        </form>
+    </div>
+</div>
+<script>
+    document.getElementById('login').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const response = await fetch('/api/v1/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ username, password })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem('token', data.token);
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('tweet-form').classList.remove('hidden');
+        } else {
+            alert('Login failed');
+        }
+    });
+
+    document.getElementById('tweet').addEventListener('submit', async function(event) {
+        event.preventDefault();
+        const content = document.getElementById('content').value;
+        const token = localStorage.getItem('token');
+        const response = await fetch('/api/v1/tweet', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ content })
+        });
+        if (response.ok) {
+            alert('Tweet created');
+        } else {
+            alert('Tweet creation failed');
+        }
+    });
+</script>
+</body>
+</html>

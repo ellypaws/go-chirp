@@ -4,7 +4,7 @@ import {type Claims, jwtMiddleware} from "../middleware/auth.ts";
 
 const router = express.Router();
 
-router.post('/new', jwtMiddleware, async (req: Request, res: Response) => {
+router.post('/tweet', jwtMiddleware, async (req: Request, res: Response) => {
   const user: Claims | undefined = req.user;
 
   if (!user) {
