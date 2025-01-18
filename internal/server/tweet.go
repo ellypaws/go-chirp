@@ -24,12 +24,13 @@ func (s *Server) CreateTweetHandler(w http.ResponseWriter, r *http.Request) {
 
 	tweet.UserID = claims.UserID
 
-	err = services.CreateTweet(s.db, tweet)
+	tweet, err = services.CreateTweet(s.db, tweet)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+	_ = utils.Encode(w, tweet)
 }
 
 func (s *Server) DeleteTweetHandler(w http.ResponseWriter, r *http.Request) {
