@@ -6,6 +6,12 @@ import (
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
+	app := http.NewServeMux()
+
+	fileServer := http.FileServer(http.Dir("./react/dist"))
+	app.Handle("/", http.StripPrefix("/", fileServer))
+
+	// API router
 	router := http.NewServeMux()
 	router.HandleFunc("POST /signup", s.SignupHandler)
 	router.HandleFunc("POST /login", s.LoginHandler)
@@ -21,8 +27,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	api := http.NewServeMux()
 	api.Handle("/api/", http.StripPrefix("/api", v1))
 
-	// Wrap the mux with CORS middleware
-	return s.corsMiddleware(api)
+	app.Handle("/api/", api)
+
+	return s.corsMiddleware(app)
 }
 
 func (s *Server) corsMiddleware(next http.Handler) http.Handler {
