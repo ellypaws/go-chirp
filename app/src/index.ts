@@ -18,7 +18,7 @@ app.use('/api/v1', authRoutes);
 app.use('/api/v1', jwtMiddleware, tweetRoutes);
 // app.use('/follow', jwtMiddleware, followRoutes);
 
-migrate().then(r => console.log(r))
+await migrate().then(r => console.log(r))
   .catch(e => console.error(e))
   .finally(() => console.log('Migration complete'));
 
