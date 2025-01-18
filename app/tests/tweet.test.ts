@@ -4,6 +4,7 @@ import tweetRoutes from '../src/routes/tweet';
 import { jwtMiddleware } from '../src/middleware/auth';
 import { createTweet } from '../src/db/queries';
 import type {Request, Response} from "express";
+import { Tweet } from "../src/models/tweet";
 
 jest.mock('../src/db/queries');
 jest.mock('../src/middleware/auth', () => ({
@@ -38,11 +39,9 @@ describe('Tweet Routes', () => {
 
   describe('POST /tweet', () => {
     it('should create a new tweet', async () => {
-      const mockTweet = {
-        id: 1,
+      const mockTweet: Tweet = {
         userId: 1,
         content: 'This is a test tweet',
-        createdAt: new Date().toISOString(),
       };
 
       (createTweet as jest.Mock).mockResolvedValue(mockTweet);
@@ -55,10 +54,8 @@ describe('Tweet Routes', () => {
       expect(response.status).toBe(201);
       expect(response.body).toEqual(mockTweet);
       expect(createTweet).toHaveBeenCalledWith({
-        id: 0,
         userId: 1,
         content: 'This is a test tweet',
-        createdAt: expect.any(String),
       });
     });
 

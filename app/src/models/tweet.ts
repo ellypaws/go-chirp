@@ -3,10 +3,10 @@ import {z} from "zod";
 
 
 export interface Tweet {
-  id: number;
+  id?: number;
   userId: number;
   content: string;
-  createdAt: string;
+  createdAt?: string;
 }
 
 export const TweetSchema = {

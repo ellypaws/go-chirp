@@ -14,10 +14,8 @@ router.post('/tweet', jwtMiddleware, async (req: Request, res: Response) => {
 
   try {
     const tweet = await createTweet({
-      id: 0,
       userId: user.userId,
       content: req.body.content,
-      createdAt: new Date().toISOString()
     });
     res.status(201).json(tweet);
   } catch (error) {
