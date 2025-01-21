@@ -2,21 +2,27 @@ package services
 
 import (
 	"github.com/ellypaws/go-chirp/internal/models"
-	"github.com/ellypaws/go-chirp/pkg/db"
+	"gorm.io/gorm"
 )
 
-func FollowUser(db *database.Service, follow models.Follow) error {
-	return db.CreateFollow(follow)
+func FollowUser(db *gorm.DB, follow models.Follow) error {
+	result := db.Create(&follow)
+	return result.Error
 }
 
-func UnfollowUser(db *database.Service, follow models.Follow) error {
-	return db.DeleteFollow(follow)
+func UnfollowUser(db *gorm.DB, follow models.Follow) error {
+	result := db.Delete(&follow)
+	return result.Error
 }
 
-func GetFollowers(db *database.Service, userID string) ([]models.User, error) {
-	return db.GetFollowers(userID)
+func GetFollowers(db *gorm.DB, userID string) ([]models.User, error) {
+	var followers []models.User
+	err := db.Where("id = ?", userID).Find(&models.User{}).Association("Followers").Find(&followers)
+	return followers, err
 }
 
-func GetFollowing(db *database.Service, userID string) ([]models.User, error) {
-	return db.GetFollowing(userID)
+func GetFollowing(db *gorm.DB, userID string) ([]models.User, error) {
+	var following []models.User
+	err := db.Where("id = ?", userID).Find(&models.User{}).Association("Following").Find(&following)
+	return following, err
 }

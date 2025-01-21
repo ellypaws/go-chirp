@@ -23,7 +23,7 @@ func (s *Server) FollowHandler(w http.ResponseWriter, r *http.Request) {
 
 	follow.FollowerID = claims.UserID
 
-	err = services.FollowUser(s.db, follow)
+	err = services.FollowUser(s.db.Gorm(), follow)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -37,7 +37,7 @@ func (s *Server) UnfollowHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	err = services.UnfollowUser(s.db, follow)
+	err = services.UnfollowUser(s.db.Gorm(), follow)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -47,7 +47,7 @@ func (s *Server) UnfollowHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) GetFollowersHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.URL.Query().Get("user_id")
-	followers, err := services.GetFollowers(s.db, userID)
+	followers, err := services.GetFollowers(s.db.Gorm(), userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -57,7 +57,7 @@ func (s *Server) GetFollowersHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) GetFollowingHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.URL.Query().Get("user_id")
-	following, err := services.GetFollowing(s.db, userID)
+	following, err := services.GetFollowing(s.db.Gorm(), userID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

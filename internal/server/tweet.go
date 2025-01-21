@@ -1,7 +1,7 @@
 package server
 
 import (
-	"fmt"
+	"gorm.io/gorm"
 	"net/http"
 
 	"github.com/ellypaws/go-chirp/internal/models"
@@ -24,7 +24,7 @@ func (s *Server) CreateTweetHandler(w http.ResponseWriter, r *http.Request) {
 
 	tweet.UserID = claims.UserID
 
-	tweet, err = services.CreateTweet(s.db, tweet)
+	tweet, err = services.CreateTweet(s.db.Gorm(), tweet)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -46,7 +46,7 @@ func (s *Server) DeleteTweetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = services.DeleteTweet(s.db, tweet.ID, claims.UserID)
+	err = services.DeleteTweet(s.db.Gorm(), tweet.ID, claims.UserID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -55,7 +55,7 @@ func (s *Server) DeleteTweetHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) FetchTweetsHandler(w http.ResponseWriter, r *http.Request) {
-	tweets, err := services.FetchTweets(s.db)
+	tweets, err := services.FetchTweets(s.db.Gorm())
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -65,28 +65,20 @@ func (s *Server) FetchTweetsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) FetchUserTweetsHandler(w http.ResponseWriter, r *http.Request) {
-	var tweets []models.Tweet
-	var err error
+	var tweets []*models.Tweet
+	var result *gorm.DB
 	if username := r.PathValue("username"); username != "" {
-		_, err = s.db.GetUserByUsername(username)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("error fetching user by username: %v", err), http.StatusBadRequest)
-			return
-		}
-		tweets, err = services.FetchUserTweetsByUsername(s.db, username)
+		var user models.User
+		result = s.db.Gorm().Where("username = ?", username).Preload("Tweets").First(&user)
+		tweets = user.Tweets
 	} else if userID := r.PathValue("userID"); userID != "" {
-		_, err = s.db.GetUserByID(userID)
-		if err != nil {
-			http.Error(w, fmt.Sprintf("error fetching user by userID: %v", err), http.StatusBadRequest)
-			return
-		}
-		tweets, err = services.FetchUserTweets(s.db, userID)
+		result = s.db.Gorm().Where("user_id = ?", userID).Find(&tweets)
 	} else {
 		http.Error(w, "missing username or userID query parameter", http.StatusBadRequest)
 		return
 	}
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if result.Error != nil {
+		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

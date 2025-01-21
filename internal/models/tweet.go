@@ -1,8 +1,25 @@
 package models
 
+import "gorm.io/gorm"
+
 type Tweet struct {
-    ID        int    `json:"id"`
-    UserID    int    `json:"user_id"`
-    Content   string `json:"content"`
-    CreatedAt string `json:"created_at"`
+	gorm.Model
+	UserID   uint   `json:"user_id"`
+	Content  string `json:"content"`
+	ParentID *uint  `json:"parent_id,omitempty"`
+
+	Likes     []*Like `json:"liked_by,omitempty"`
+	LikeCount uint    `json:"like_count"`
+
+	Replies      []*Tweet `json:"replies,omitempty" gorm:"foreignKey:ID"`
+	RepliesCount uint     `json:"replies_count"`
+}
+
+type Like struct {
+	gorm.Model
+	UserID  uint `json:"user_id"`
+	TweetID uint `json:"tweet_id"`
+
+	Tweet *Tweet `json:"tweet"`
+	User  *User  `json:"user"`
 }

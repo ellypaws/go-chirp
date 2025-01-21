@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+	"gorm.io/gorm"
 	"net/mail"
 
 	"github.com/ellypaws/go-chirp/internal/models"
@@ -16,19 +17,20 @@ func Signup(db *database.Service, user models.User) error {
 		return err
 	}
 	user.Password = string(hashedPassword)
-	return db.CreateUser(user)
+	return db.Gorm().Create(&user).Error
 }
 
 func Login(db *database.Service, username, password string) (*models.User, error) {
 	var user models.User
+	var result *gorm.DB
 	_, err := mail.ParseAddress(username)
 	if err == nil {
-		user, err = db.GetUserByEmail(username)
+		result = db.Gorm().Where("email = ?", username).First(&user)
 	} else {
-		user, err = db.GetUserByUsername(username)
+		result = db.Gorm().Where("username = ?", username).First(&user)
 	}
-	if err != nil {
-		return nil, err
+	if result.Error != nil {
+		return nil, result.Error
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))

@@ -1,7 +1,9 @@
 package models
 
+import "gorm.io/gorm"
+
 type Follow struct {
-    ID         int `json:"id"`
-    FollowerID int `json:"follower_id"`
-    FollowedID int `json:"followed_id"`
+	gorm.Model
+	FollowerID uint `json:"follower_id"`
+	FollowedID uint `json:"followed_id"`
 }

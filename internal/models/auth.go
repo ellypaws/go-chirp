@@ -13,7 +13,7 @@ type LoginResponse struct {
 }
 
 type Claims struct {
-	UserID   int    `json:"user_id"`
+	UserID   uint   `json:"user_id"`
 	Username string `json:"username"`
 	Email    string `json:"email"`
 	jwt.StandardClaims
