@@ -10,6 +10,10 @@ interface TweetData {
   content: string
   created_at?: string
   CreatedAt: string
+  like_count: number
+  replies_count: number
+  parent_id?: number
+  username?: string
 }
 
 interface UserHomepageProps {
