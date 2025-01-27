@@ -40,3 +40,12 @@ func Login(db *database.Service, username, password string) (*models.User, error
 
 	return &user, nil
 }
+
+func GetUserByID(db *database.Service, userID uint) (*models.User, error) {
+	var user models.User
+	result := db.Gorm().Where("id = ?", userID).First(&user)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &user, nil
+}

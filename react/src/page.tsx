@@ -1,17 +1,57 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from './components/Header'
 import PublicTimeline from './components/PublicTimeline'
 import UserHomepage from './components/UserHomepage'
 import LoginModal from './components/LoginModal'
 
+interface User {
+  ID: number
+  username: string
+  email: string
+}
+
+interface LoginData {
+  user: User
+  token: string
+}
+
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [user, setUser] = useState(null)
+  const [user, setUser] = useState<User | null>(null)
   const [showLoginModal, setShowLoginModal] = useState(false)
 
-  const handleLogin = (data) => {
+  useEffect(() => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      // Verify token with backend
+      fetch('http://localhost:8080/api/v1/verify', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          return response.json()
+        }
+        throw new Error('Invalid token')
+      })
+      .then((data: LoginData) => {
+        setUser(data.user)
+        setIsLoggedIn(true)
+      })
+      .catch(() => {
+        localStorage.removeItem('token')
+        setUser(null)
+        setIsLoggedIn(false)
+      })
+    }
+  }, [])
+
+  const handleLogin = (data: LoginData) => {
     localStorage.setItem('token', data.token)
     setUser(data.user)
     setIsLoggedIn(true)
@@ -19,6 +59,7 @@ export default function Home() {
   }
 
   const handleLogout = () => {
+    localStorage.removeItem('token')
     setUser(null)
     setIsLoggedIn(false)
   }
@@ -32,7 +73,7 @@ export default function Home() {
         username={user?.username}
       />
       <main className="mt-8">
-        {isLoggedIn ? (
+        {isLoggedIn && user ? (
           <UserHomepage userId={user.ID} />
         ) : (
           <PublicTimeline />

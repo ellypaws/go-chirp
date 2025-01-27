@@ -1,8 +1,9 @@
 package server
 
 import (
-	"github.com/ellypaws/go-chirp/internal/middleware"
 	"net/http"
+
+	"github.com/ellypaws/go-chirp/internal/middleware"
 )
 
 func (s *Server) RegisterRoutes() http.Handler {
@@ -18,6 +19,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	router.HandleFunc("GET /tweets", s.FetchTweetsHandler)
 	router.HandleFunc("GET /user/{userID}/tweets", s.FetchUserTweetsHandler)
 	router.HandleFunc("GET /username/{username}/tweets", s.FetchUserTweetsHandler)
+	router.Handle("POST /verify", middleware.JWTMiddleware(http.HandlerFunc(s.VerifyHandler)))
 	router.Handle("POST /tweet", middleware.JWTMiddleware(http.HandlerFunc(s.CreateTweetHandler)))
 	router.Handle("POST /follow", middleware.JWTMiddleware(http.HandlerFunc(s.FollowHandler)))
 	router.Handle("DELETE /tweet", middleware.JWTMiddleware(http.HandlerFunc(s.DeleteTweetHandler)))

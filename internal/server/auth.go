@@ -3,6 +3,7 @@ package server
 import (
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/ellypaws/go-chirp/internal/middleware"
@@ -76,4 +77,25 @@ func generateJWT(user *models.User) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func (s *Server) VerifyHandler(w http.ResponseWriter, r *http.Request) {
+	claims, ok := r.Context().Value("jwt").(*models.Claims)
+	if !ok {
+		http.Error(w, "Failed to get user from token", http.StatusUnauthorized)
+		return
+	}
+
+	user, err := services.GetUserByID(s.db, claims.UserID)
+	if err != nil {
+		http.Error(w, "User not found", http.StatusUnauthorized)
+		return
+	}
+
+	user.Password = ""
+	w.Header().Set("Content-Type", "application/json")
+	_ = utils.Encode(w, models.LoginResponse{
+		User:  user,
+		Token: strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer "),
+	})
 }
