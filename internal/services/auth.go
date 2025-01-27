@@ -16,7 +16,7 @@ func Signup(db *database.Service, user models.User) error {
 	if err != nil {
 		return err
 	}
-	user.Password = string(hashedPassword)
+	user.Password = models.Password(hashedPassword)
 	return db.Gorm().Create(&user).Error
 }
 
