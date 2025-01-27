@@ -33,7 +33,7 @@ export default function Home() {
       />
       <main className="mt-8">
         {isLoggedIn ? (
-          <UserHomepage userId={user.id} />
+          <UserHomepage userId={user.ID} />
         ) : (
           <PublicTimeline />
         )}
