@@ -32,7 +32,7 @@ export default function UserHomepage({ userId }: UserHomepageProps) {
           return
         }
         const data = await response.json()
-        setTweets(data.tweets ? [...data.tweets].reverse() : [])
+        setTweets(data ? [...data].reverse() : [])
       } catch (error) {
         console.error('Error fetching tweets:', error)
       }
@@ -45,6 +45,17 @@ export default function UserHomepage({ userId }: UserHomepageProps) {
     setTweets([newTweet, ...tweets])
   }
 
+  const handleNewReply = (newReply: TweetData) => {
+    // Update the replies count of the parent tweet
+    setTweets(tweets.map(tweet => 
+      tweet.ID === newReply.parent_id
+        ? { ...tweet, replies_count: tweet.replies_count + 1 }
+        : tweet
+    ))
+    // Add the reply to the top of the feed
+    setTweets([newReply, ...tweets])
+  }
+
   return (
     <div className="flex flex-col h-[calc(100vh-4rem)]">
       <div className="flex-none p-4">
@@ -54,7 +65,11 @@ export default function UserHomepage({ userId }: UserHomepageProps) {
       <div className="flex-1 overflow-y-auto p-4">
         <div className="space-y-4">
           {tweets.map((tweet) => (
-            <Tweet key={tweet.ID} tweet={tweet} />
+            <Tweet 
+              key={tweet.ID} 
+              tweet={tweet} 
+              onNewReply={handleNewReply}
+            />
           ))}
         </div>
       </div>
