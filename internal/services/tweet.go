@@ -13,13 +13,12 @@ func CreateTweet(db *gorm.DB, tweet models.Tweet) (models.Tweet, error) {
 		return tweet, result.Error
 	}
 
-	var user models.User
-	result = db.Where("id = ?", tweet.UserID).First(&user)
+	result = db.Where("id = ?", tweet.UserID).First(&tweet.User)
 	if result.Error != nil {
 		return tweet, result.Error
 	}
-	user.TweetCount++
-	result = db.Save(&user)
+	tweet.User.TweetCount++
+	result = db.Save(&tweet.User)
 	if result.Error != nil {
 		return tweet, result.Error
 	}
