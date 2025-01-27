@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"github.com/ellypaws/go-chirp/internal/models"
 	"gorm.io/gorm"
 )
@@ -22,14 +23,25 @@ func CreateTweet(db *gorm.DB, tweet models.Tweet) (models.Tweet, error) {
 		return tweet, result.Error
 	}
 
+	if tweet.ParentID != nil {
+		result = db.Model(&models.Tweet{}).Where("id = ?", *tweet.ParentID).Update("replies_count", gorm.Expr("replies_count + ?", 1))
+		if result.Error != nil {
+			return tweet, result.Error
+		}
+	}
+
 	return tweet, result.Error
 }
 
 func DeleteTweet(db *gorm.DB, tweetID, userID uint) error {
 	var tweet models.Tweet
-	result := db.Where("id = ?", tweetID).Preload("Likes").Preload("Replies").First(&tweet)
+	result := db.Where("id = ?", tweetID).First(&tweet)
 	if result.Error != nil {
 		return result.Error
+	}
+
+	if tweet.UserID != userID {
+		return errors.New("not the owner of the tweet")
 	}
 
 	result = db.Delete(&tweet)
@@ -37,28 +49,19 @@ func DeleteTweet(db *gorm.DB, tweetID, userID uint) error {
 		return gorm.ErrRecordNotFound
 	}
 
-	var user models.User
-	result = db.Where("id = ?", userID).First(&user)
-	if result.Error != nil {
-		return result.Error
-	}
-	user.TweetCount--
-	result = db.Save(&user)
+	result = db.Model(&models.User{}).Where("id = ?", userID).Update("tweet_count", gorm.Expr("tweet_count - 1"))
 	if result.Error != nil {
 		return result.Error
 	}
 
-	var parentTweet models.Tweet
 	if tweet.ParentID != nil {
-		result = db.Where("id = ?", *tweet.ParentID).First(&parentTweet)
-		if result.Error != nil {
-			return result.Error
-		}
-		parentTweet.RepliesCount--
-		result = db.Save(&parentTweet)
-		if result.Error != nil {
-			return result.Error
-		}
+		db.Model(&models.Tweet{}).Where("id = ?", *tweet.ParentID).Update("replies_count", gorm.Expr("replies_count - 1"))
+	}
+
+	var tweets []models.Like
+	db.Where("tweet_id = ?", tweetID).Find(&tweets)
+	for _, tweet := range tweets {
+		db.Delete(tweet)
 	}
 
 	return result.Error
@@ -67,17 +70,5 @@ func DeleteTweet(db *gorm.DB, tweetID, userID uint) error {
 func FetchTweets(db *gorm.DB) ([]models.Tweet, error) {
 	var tweets []models.Tweet
 	result := db.Preload("Likes").Preload("Replies").Find(&tweets)
-	return tweets, result.Error
-}
-
-func FetchUserTweets(db *gorm.DB, userID string) ([]models.Tweet, error) {
-	var tweets []models.Tweet
-	result := db.Where("user_id = ?", userID).Preload("Likes").Preload("Replies").Find(&tweets)
-	return tweets, result.Error
-}
-
-func FetchUserTweetsByUsername(db *gorm.DB, username string) ([]models.Tweet, error) {
-	var tweets []models.Tweet
-	result := db.Where("username = ?", username).Preload("Likes").Preload("Replies").Find(&tweets)
 	return tweets, result.Error
 }

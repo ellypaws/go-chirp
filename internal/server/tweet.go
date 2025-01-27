@@ -30,6 +30,7 @@ func (s *Server) CreateTweetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
 	_ = utils.Encode(w, tweet)
 }
 
@@ -60,19 +61,16 @@ func (s *Server) FetchTweetsHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
 	_ = utils.Encode(w, tweets)
 }
 
 func (s *Server) FetchUserTweetsHandler(w http.ResponseWriter, r *http.Request) {
-	var tweets []*models.Tweet
+	var user models.User
 	var result *gorm.DB
 	if username := r.PathValue("username"); username != "" {
-		var user models.User
 		result = s.db.Gorm().Where("username = ?", username).Preload("Tweets").First(&user)
-		tweets = user.Tweets
 	} else if userID := r.PathValue("userID"); userID != "" {
-		result = s.db.Gorm().Where("user_id = ?", userID).Find(&tweets)
+		result = s.db.Gorm().Where("id = ?", userID).Preload("Tweets").First(&user)
 	} else {
 		http.Error(w, "missing username or userID query parameter", http.StatusBadRequest)
 		return
@@ -81,6 +79,5 @@ func (s *Server) FetchUserTweetsHandler(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.Header().Set("Content-Type", "application/json")
-	_ = utils.Encode(w, tweets)
+	_ = utils.Encode(w, user)
 }

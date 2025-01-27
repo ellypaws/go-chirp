@@ -20,6 +20,7 @@ func (s *Server) RegisterRoutes() http.Handler {
 	router.HandleFunc("GET /username/{username}/tweets", s.FetchUserTweetsHandler)
 	router.Handle("POST /tweet", middleware.JWTMiddleware(http.HandlerFunc(s.CreateTweetHandler)))
 	router.Handle("POST /follow", middleware.JWTMiddleware(http.HandlerFunc(s.FollowHandler)))
+	router.Handle("DELETE /tweet", middleware.JWTMiddleware(http.HandlerFunc(s.DeleteTweetHandler)))
 
 	v1 := http.NewServeMux()
 	v1.Handle("/v1/", http.StripPrefix("/v1", router))

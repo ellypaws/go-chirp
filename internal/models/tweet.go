@@ -11,7 +11,7 @@ type Tweet struct {
 	Likes     []*Like `json:"liked_by,omitempty"`
 	LikeCount uint    `json:"like_count"`
 
-	Replies      []*Tweet `json:"replies,omitempty" gorm:"foreignKey:ID"`
+	Replies      []*Tweet `json:"replies,omitempty" gorm:"foreignKey:parent_id"`
 	RepliesCount uint     `json:"replies_count"`
 }
 
