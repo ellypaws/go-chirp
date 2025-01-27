@@ -79,5 +79,10 @@ func (s *Server) FetchUserTweetsHandler(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, result.Error.Error(), http.StatusInternalServerError)
 		return
 	}
-	_ = utils.Encode(w, user)
+	shallow := user
+	shallow.Tweets = nil
+	for i := range user.Tweets {
+		user.Tweets[i].User = &shallow
+	}
+	_ = utils.Encode(w, user.Tweets)
 }

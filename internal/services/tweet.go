@@ -2,6 +2,7 @@ package services
 
 import (
 	"errors"
+
 	"github.com/ellypaws/go-chirp/internal/models"
 	"gorm.io/gorm"
 )
@@ -69,6 +70,6 @@ func DeleteTweet(db *gorm.DB, tweetID, userID uint) error {
 
 func FetchTweets(db *gorm.DB) ([]models.Tweet, error) {
 	var tweets []models.Tweet
-	result := db.Preload("Likes").Preload("Replies").Find(&tweets)
+	result := db.Preload("User").Preload("Likes").Preload("Replies").Find(&tweets)
 	return tweets, result.Error
 }
