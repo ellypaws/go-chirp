@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate, useParams } from 'react-router-dom'
 import Header from './components/Header'
 import PublicTimeline from './components/PublicTimeline'
 import UserHomepage from './components/UserHomepage'
@@ -15,6 +16,11 @@ interface User {
 interface LoginData {
   user: User
   token: string
+}
+
+function UserProfile() {
+  const { username } = useParams<{ username: string }>()
+  return <UserHomepage username={username || ''} />
 }
 
 export default function Home() {
@@ -72,28 +78,31 @@ export default function Home() {
   }
 
   return (
-    <div className="container mx-auto px-4">
-      <Header 
-        isLoggedIn={isLoggedIn} 
-        onLoginClick={() => setShowLoginModal(true)}
-        onLogout={handleLogout}
-        username={user?.username}
-      />
-      <main className="mt-8">
-        {isLoggedIn && user ? (
-          <UserHomepage userId={user.ID} />
-        ) : (
-          <PublicTimeline />
-        )}
-      </main>
-      {showLoginModal && (
-        <LoginModal 
-          onClose={() => setShowLoginModal(false)} 
-          onLogin={handleLogin}
-          onRegister={handleRegister}
+    <Router>
+      <div className="container mx-auto px-4">
+        <Header
+          isLoggedIn={isLoggedIn}
+          user={user}
+          onLoginClick={() => setShowLoginModal(true)}
+          onLogout={handleLogout}
         />
-      )}
-    </div>
+        
+        <main className="mt-8">
+          <Routes>
+            <Route path="/" element={<PublicTimeline />} />
+            <Route path="/user/:username" element={<UserProfile />} />
+          </Routes>
+        </main>
+
+        {showLoginModal && (
+          <LoginModal
+            onClose={() => setShowLoginModal(false)}
+            onLogin={handleLogin}
+            onRegister={handleRegister}
+          />
+        )}
+      </div>
+    </Router>
   )
 }
 

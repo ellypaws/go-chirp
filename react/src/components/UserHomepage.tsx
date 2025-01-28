@@ -18,10 +18,10 @@ interface TweetData {
 }
 
 interface UserHomepageProps {
-  userId: number
+  username: string
 }
 
-export default function UserHomepage({ userId }: UserHomepageProps) {
+export default function UserHomepage({ username }: UserHomepageProps) {
   const [tweets, setTweets] = useState<TweetData[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
@@ -29,7 +29,7 @@ export default function UserHomepage({ userId }: UserHomepageProps) {
     const fetchTweets = async () => {
       setIsLoading(true)
       try {
-        const response = await fetch(`http://localhost:8080/api/v1/user/${userId}/tweets`)
+        const response = await fetch(`http://localhost:8080/api/v1/username/${username}/tweets`)
         if (!response.ok) {
           console.error('Error fetching tweets:', response.statusText)
           return
@@ -44,7 +44,7 @@ export default function UserHomepage({ userId }: UserHomepageProps) {
     }
 
     fetchTweets()
-  }, [userId])
+  }, [username])
 
   const handleNewTweet = (newTweet: TweetData) => {
     setTweets([newTweet, ...tweets])

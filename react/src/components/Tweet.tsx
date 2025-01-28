@@ -1,5 +1,6 @@
 import { formatDistanceToNow } from 'date-fns'
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import ReplyModal from './ReplyModal'
 
 interface User {
@@ -29,6 +30,7 @@ interface TweetProps {
 export default function Tweet({ tweet, onNewReply }: TweetProps) {
   const [isReplyModalOpen, setIsReplyModalOpen] = useState(false)
   const username = tweet.user?.username || 'Anonymous'
+  const isAnonymous = !tweet.user?.username
   
   const handleReplyClick = () => {
     setIsReplyModalOpen(true)
@@ -49,9 +51,18 @@ export default function Tweet({ tweet, onNewReply }: TweetProps) {
               </span>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="font-bold text-gray-200 hover:text-gray-300">
-                {username}
-              </span>
+              {isAnonymous ? (
+                <span className="font-bold text-gray-500">
+                  {username}
+                </span>
+              ) : (
+                <Link 
+                  to={`/user/${username}`}
+                  className="font-bold text-gray-200 hover:text-gray-300 hover:underline"
+                >
+                  {username}
+                </Link>
+              )}
               <span className="text-sm text-gray-500">·</span>
               <span className="text-sm text-gray-500">
                 {formatDistanceToNow(new Date(tweet.created_at || tweet.CreatedAt))} ago
