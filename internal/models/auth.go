@@ -18,3 +18,26 @@ type Claims struct {
 	Email    string `json:"email"`
 	jwt.StandardClaims
 }
+
+type SignupRequest struct {
+	Username string `json:"username"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type AuthError struct {
+	message string
+	code    int
+}
+
+func NewAuthError(message string, code int) AuthError {
+	return AuthError{message: message, code: code}
+}
+
+func (e AuthError) Error() string {
+	return e.message
+}
+
+func (e AuthError) StatusCode() int {
+	return e.code
+}

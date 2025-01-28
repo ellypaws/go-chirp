@@ -1,7 +1,8 @@
 package server
 
 import (
-	"fmt"
+	"encoding/json"
+	"errors"
 	"net/http"
 	"strings"
 	"time"
@@ -15,32 +16,56 @@ import (
 )
 
 func (s *Server) SignupHandler(w http.ResponseWriter, r *http.Request) {
-	user, err := utils.Decode[models.User](r)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	var req models.SignupRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	err = services.Signup(s.db, user)
+
+	user, err := services.Signup(s.db, models.SignupRequest{
+		Username: req.Username,
+		Email:    req.Email,
+		Password: req.Password,
+	})
+
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		var authError models.AuthError
+		if errors.As(err, &authError) {
+			http.Error(w, authError.Error(), authError.StatusCode())
+		} else {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		}
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+
+	token, err := generateJWT(user)
+	if err != nil {
+		http.Error(w, "Failed to generate token", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	_ = utils.Encode(w, models.LoginResponse{
+		User:  user,
+		Token: token,
+	})
 }
 
 func (s *Server) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	login, err := utils.Decode[models.Credentials](r)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error decoding request body: %v", err), http.StatusBadRequest)
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
-	if login.Username == "" || login.Password == "" {
-		http.Error(w, "username and password are required", http.StatusBadRequest)
-		return
-	}
+
 	user, err := services.Login(s.db, login.Username, login.Password)
 	if err != nil {
-		http.Error(w, fmt.Sprintf("error logging in: %v", err), http.StatusBadRequest)
+		var authError models.AuthError
+		if errors.As(err, &authError) {
+			http.Error(w, authError.Error(), authError.StatusCode())
+		} else {
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+		}
 		return
 	}
 
