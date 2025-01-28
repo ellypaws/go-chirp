@@ -58,6 +58,13 @@ export default function Home() {
     setShowLoginModal(false)
   }
 
+  const handleRegister = (data: LoginData) => {
+    localStorage.setItem('token', data.token)
+    setUser(data.user)
+    setIsLoggedIn(true)
+    setShowLoginModal(false)
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('token')
     setUser(null)
@@ -80,7 +87,11 @@ export default function Home() {
         )}
       </main>
       {showLoginModal && (
-        <LoginModal onClose={() => setShowLoginModal(false)} onLogin={handleLogin} />
+        <LoginModal 
+          onClose={() => setShowLoginModal(false)} 
+          onLogin={handleLogin}
+          onRegister={handleRegister}
+        />
       )}
     </div>
   )
