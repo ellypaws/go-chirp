@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import Tweet from './Tweet'
 import CreateTweet from './CreateTweet'
+import TweetSkeleton from './TweetSkeleton'
 
 interface TweetData {
   ID: number
@@ -22,9 +23,11 @@ interface UserHomepageProps {
 
 export default function UserHomepage({ userId }: UserHomepageProps) {
   const [tweets, setTweets] = useState<TweetData[]>([])
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const fetchTweets = async () => {
+      setIsLoading(true)
       try {
         const response = await fetch(`http://localhost:8080/api/v1/user/${userId}/tweets`)
         if (!response.ok) {
@@ -35,6 +38,8 @@ export default function UserHomepage({ userId }: UserHomepageProps) {
         setTweets(data ? [...data].reverse() : [])
       } catch (error) {
         console.error('Error fetching tweets:', error)
+      } finally {
+        setIsLoading(false)
       }
     }
 
@@ -64,13 +69,21 @@ export default function UserHomepage({ userId }: UserHomepageProps) {
       </div>
       <div className="flex-1 overflow-y-auto p-4">
         <div className="space-y-4">
-          {tweets.map((tweet) => (
-            <Tweet 
-              key={tweet.ID} 
-              tweet={tweet} 
-              onNewReply={handleNewReply}
-            />
-          ))}
+          {isLoading ? (
+            <>
+              <TweetSkeleton />
+              <TweetSkeleton />
+              <TweetSkeleton />
+            </>
+          ) : (
+            tweets.map((tweet) => (
+              <Tweet 
+                key={tweet.ID} 
+                tweet={tweet} 
+                onNewReply={handleNewReply}
+              />
+            ))
+          )}
         </div>
       </div>
     </div>
